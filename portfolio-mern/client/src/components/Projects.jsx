@@ -7,8 +7,8 @@ const Projects = () => {
 
   useEffect(() => {
     // Fetch projects from backend
-    // For now, if backend is not running or empty, we can use dummy data or handle error gracefully
-    axios.get('http://localhost:5000/api/projects')
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    axios.get(`${apiUrl}/api/projects`)
       .then(res => setProjects(res.data))
       .catch(err => console.error(err));
   }, []);
