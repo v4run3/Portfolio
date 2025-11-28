@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-mern",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix portfolio-mern/client && npm run build --prefix portfolio-mern/client",
+    "start": "npm start --prefix portfolio-mern/server"
+  }
+}
