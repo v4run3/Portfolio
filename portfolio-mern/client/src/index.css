@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+body {
+  background-color: #191919;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@theme {
+  --color-primary: #191919;
+  --color-secondary: #ffffff;
+  --color-accent: #333333;
+  --font-sans: 'Inter', sans-serif;
+}
