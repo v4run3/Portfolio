@@ -7,16 +7,16 @@ const sampleProjects = [
   {
     title: "Portfolio Website",
     description: "A modern MERN stack portfolio website with dark theme",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
-    link: "https://github.com/yourusername/portfolio",
+    image: "https://ik.imagekit.io/ytnwsw1tm/Screenshot%202025-11-29%20155453.png",
+    link: "https://github.com/v4run3/Portfolio",
     tags: ["React", "Node.js", "MongoDB", "Express"]
   },
   {
-    title: "Task Management App",
+    title: "Taskify - Task Management App",
     description: "A collaborative task management tool with real-time updates",
     image: "https://ik.imagekit.io/ytnwsw1tm/Pi7_Tool_Screenshot%202025-11-29%20150234(1).jpg",
-    link: "https://github.com/yourusername/task-manager",
-    tags: ["React", "Socket.io", "MongoDB", "Material-UI"]
+    link: "https://github.com/v4run3/Taskify",
+    tags: ["React", "Node.js", "MongoDB", "Express"]
   }
 ];
 
