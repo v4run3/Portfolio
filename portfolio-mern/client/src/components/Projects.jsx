@@ -25,14 +25,15 @@ const Projects = () => {
           Selected Works
         </motion.h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-8 pb-8 scrollbar-hide">
           {projects.length > 0 ? projects.map((project) => (
             <motion.div 
               key={project._id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="bg-[#222] p-4 rounded-lg hover:bg-[#2a2a2a] transition-colors"
+              className="min-w-[85vw] md:min-w-[450px] bg-[#222] p-4 rounded-lg hover:bg-[#2a2a2a] transition-colors snap-center flex-shrink-0"
             >
               <img src={project.image} alt={project.title} className="w-full h-64 object-cover rounded-md mb-4" />
               <h3 className="text-2xl font-bold mb-2">{project.title}</h3>
