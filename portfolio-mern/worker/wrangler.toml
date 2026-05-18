@@ -1,0 +1,15 @@
+name = "portfolio-api"
+main = "src/index.js"
+compatibility_date = "2025-01-15"
+
+# Allowed origins for CORS. Comma-separated list.
+# Add your Pages preview URLs if you want them to call the API too.
+[vars]
+ALLOWED_ORIGINS = "https://portfolio-iio.pages.dev,http://localhost:5173"
+
+# D1 database binding. After running `wrangler d1 create portfolio`,
+# paste the returned database_id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "portfolio"
+database_id = "0a21e47c-e007-4dc2-b988-a47ca301ad9d"

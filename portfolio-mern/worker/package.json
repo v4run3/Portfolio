@@ -1,0 +1,16 @@
+{
+  "name": "portfolio-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute portfolio --remote --file=./schema.sql",
+    "db:seed": "wrangler d1 execute portfolio --remote --file=./seed.sql",
+    "db:init:local": "wrangler d1 execute portfolio --local --file=./schema.sql",
+    "db:seed:local": "wrangler d1 execute portfolio --local --file=./seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
