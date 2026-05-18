@@ -22,15 +22,15 @@ async function addProject() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('✅ Project added successfully!');
+      console.log('Project added successfully!');
       console.log(data);
     } else {
       const error = await response.text();
-      console.error('❌ Error adding project:', error);
+      console.error('Error adding project:', error);
     }
   } catch (err) {
-    console.error('❌ Connection error:', err.message);
-    console.log('\n⚠️  Make sure your server is running first!');
+    console.error('Connection error:', err.message);
+    console.log('\nMake sure your server is running first!');
     console.log('Run: cd server && npm start');
   }
 }
