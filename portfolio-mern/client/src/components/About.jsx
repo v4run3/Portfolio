@@ -1,110 +1,188 @@
 import { motion } from 'framer-motion';
-import { FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaDownload, FaGithub, FaLinkedin } from 'react-icons/fa';
+
+const tags = [
+  { label: 'Mumbai, IN', icon: FaMapMarkerAlt },
+  { label: 'Web Development' },
+  { label: 'Python' },
+  { label: 'Artificial Intelligence' },
+  { label: 'Machine Learning' },
+  { label: 'Data Science' },
+  { label: 'Natural Language Processing' },
+  { label: 'Large Language Models' },
+];
+
+const education = [
+  {
+    school: "K. J. Somaiya College of Engineering",
+    degree: "Master's, Computer Engineering",
+    year: '2025 — 2027',
+    current: true,
+  },
+  {
+    school: 'Shah & Anchor Kutchhi Engineering College',
+    degree: 'B.E., Electronics & Computer Science',
+    year: '2021 — 2024',
+  },
+  {
+    school: 'Babasaheb Gawde Institute of Technology',
+    degree: 'Diploma, Computer Technology',
+    year: '2018 — 2021',
+  },
+  {
+    school: 'Army Public School',
+    degree: 'High School',
+    year: '2007 — 2017',
+  },
+];
+
+const SectionLabel = ({ children, num }) => (
+  <div className="flex items-center gap-4 mb-12">
+    <span className="text-accent text-sm tracking-wider">{num}</span>
+    <h2 className="text-2xl md:text-3xl font-mono text-white">{children}</h2>
+    <div className="flex-1 h-px bg-border" />
+  </div>
+);
 
 const About = () => {
-  const education = [
-    {
-      school: "K. J. Somaiya College of Engineering",
-      degree: "Master's degree in Computer Engineering",
-      year: "2025 - 2027"
-    },
-    {
-      school: "Shah & Anchor Kutchhi Engineering College",
-      degree: "Bachelor's degree in Electronics and Computer Science",
-      year: "2021 - 2024"
-    },
-    {
-      school: "Babasaheb Gawde Institute of Technology",
-      degree: "Diploma in Computer Technology",
-      year: "2018 - 2021"
-    },   
-    {
-      school: "Army Public School",
-      degree: "High School",
-      year: "2007 - 2017"
-    }
-  ];
-
-  const tags = ["Mumbai", "Web Development", "Python", "Artificial Intelligence", "Machine Learning", "Data Science","Natural Language Processing","Large Language Models"];
-
   return (
-    <section id="about" className="min-h-screen flex items-center justify-center px-8 py-20 bg-[#191919]">
-      <div className="max-w-6xl w-full">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center mb-16"
-        >
-          <h2 className="text-5xl font-bold mr-8">About</h2>
-          <div className="h-px bg-gray-700 flex-grow"></div>
-        </motion.div>
+    <section className="relative px-6 md:px-12 py-24 border-t border-border">
+      <div className="max-w-6xl mx-auto">
+        <SectionLabel num="// about">about.me</SectionLabel>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Column: Image */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-1"
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+          {/* Profile card — left */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-2"
           >
-            <div className="rounded-3xl overflow-hidden aspect-[3/4] bg-gray-800">
-              {/* Placeholder for user image - using a gray div for now or a placeholder image */}
-              <img 
-                src="https://placehold.co/400x500/333/999?text=Varun+Bhonslay" 
-                alt="Varun Bhonslay" 
-                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-              />
+            <div className="card overflow-hidden">
+              {/* window chrome */}
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-surface2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3a3a3a]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3a3a3a]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3a3a3a]" />
+                </div>
+                <span className="text-[11px] text-white/40">~/profile/varun.json</span>
+                <span className="w-9" />
+              </div>
+
+              <div className="aspect-[4/5] bg-surface2 relative overflow-hidden">
+                <img
+                  src="https://placehold.co/600x750/181818/86efac?font=jetbrains+mono&text=VB"
+                  alt="Varun Bhonslay"
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                />
+                {/* Bottom JSON overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+                  <pre className="text-[11px] leading-relaxed text-white/80">
+{`{
+  "name":   "Varun Bhonslay",
+  "role":   "Full-stack + AI",
+  "lvl":    "Master's, year 1",
+  "stack":  ["MERN","Python"]
+}`}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="flex border-t border-border">
+                <a
+                  href="https://github.com/v4run3"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 text-xs text-white/70 hover:text-accent hover:bg-surface2 transition-colors border-r border-border"
+                >
+                  <FaGithub size={14} /> github
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 text-xs text-white/70 hover:text-accent hover:bg-surface2 transition-colors"
+                >
+                  <FaLinkedin size={14} /> linkedin
+                </a>
+              </div>
             </div>
           </motion.div>
 
-          {/* Right Column: Content */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="lg:col-span-2 space-y-8"
+          {/* Content — right */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="lg:col-span-3 space-y-10"
           >
             <div>
-              <h3 className="text-2xl text-gray-400 font-light">Varun</h3>
-              <h1 className="text-6xl font-bold mb-6">Bhonslay</h1>
-              
-              <div className="flex flex-wrap gap-3 mb-8">
-                {tags.map((tag, index) => (
-                  <span key={index} className="px-4 py-2 bg-[#222] rounded-full text-sm font-medium text-gray-300 flex items-center gap-2 border border-gray-800">
-                    {index === 0 && <FaMapMarkerAlt size={12} />}
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <p className="text-gray-400 leading-relaxed text-lg mb-8">
-                First-year student of Masters in Computer Engineering at K. J. Somaiya College of Engineering. Passionate about Python and Artificial Intelligence, I create innovative applications and websites.
+              <div className="text-white/40 text-sm mb-2">{'// intro'}</div>
+              <p className="text-white/80 text-base md:text-lg leading-relaxed">
+                First-year Master&apos;s student in Computer Engineering at K. J. Somaiya, focused on
+                Python and applied AI. I build full-stack apps end-to-end — from edge APIs to
+                LLM-powered interfaces — and care about the small details that make software
+                feel sharp.
               </p>
             </div>
 
             <div>
-              <h3 className="text-3xl font-bold mb-8">My Education</h3>
-              <div className="space-y-8 relative border-l-2 border-gray-700 ml-3 pl-8 pb-4">
-                {education.map((edu, index) => (
-                  <div key={index} className="relative">
-                    <span className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-white border-4 border-[#191919]"></span>
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-2">
-                      <h4 className="text-xl font-bold uppercase">{edu.school}</h4>
-                      <span className="text-gray-500 text-sm italic mt-1 md:mt-0">{edu.year}</span>
-                    </div>
-                    <p className="text-gray-400">{edu.degree}</p>
-                  </div>
+              <div className="text-white/40 text-sm mb-3">{'// interests'}</div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map(({ label, icon: Icon }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[12px] border border-border bg-surface text-white/70 hover:border-accent/40 hover:text-white transition-colors"
+                  >
+                    {Icon && <Icon size={10} className="text-accent" />}
+                    {label}
+                  </span>
                 ))}
               </div>
             </div>
 
-            <a 
-              href="#" 
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-colors mt-4"
-            >
-              View my CV <FaExternalLinkAlt size={14} />
-            </a>
+            <div>
+              <div className="text-white/40 text-sm mb-4">{'// education'}</div>
+              <div className="font-mono text-[13px] leading-relaxed">
+                <div className="text-accent mb-2">education/</div>
+                <ul className="space-y-3 pl-1">
+                  {education.map((edu, i) => {
+                    const isLast = i === education.length - 1;
+                    return (
+                      <li key={edu.school} className="flex gap-3">
+                        <span className="text-white/30 select-none whitespace-pre">
+                          {isLast ? '└─ ' : '├─ '}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-baseline gap-x-3">
+                            <span className="text-white">{edu.school}</span>
+                            <span className="text-white/40 text-[12px]">{edu.year}</span>
+                            {edu.current && (
+                              <span className="px-1.5 py-0.5 text-[10px] text-accent border border-accent/30 bg-accent/[0.06] tracking-wider">
+                                CURRENT
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-white/50 text-[12px] mt-0.5">{edu.degree}</div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <a
+                href="#"
+                className="inline-flex items-center gap-2 px-4 py-2.5 border border-accent text-accent text-sm hover:bg-accent hover:text-bg transition-colors"
+              >
+                <FaDownload size={12} /> download_cv.pdf
+              </a>
+            </div>
           </motion.div>
         </div>
       </div>
