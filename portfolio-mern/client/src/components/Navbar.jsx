@@ -65,7 +65,7 @@ const Navbar = ({ onOpenPalette }) => {
             className="ml-2 group inline-flex items-center gap-2 px-3 py-1.5 text-[12px] tracking-wider border border-accent text-accent hover:bg-accent hover:text-bg transition-colors cursor-pointer"
             aria-label="open command palette"
           >
-            ./connect
+            ./run
             <kbd className="px-1 py-px text-[10px] border border-accent/40 group-hover:border-bg/40 text-accent/70 group-hover:text-bg/70 transition-colors">
               ⌃K
             </kbd>
@@ -109,7 +109,7 @@ const Navbar = ({ onOpenPalette }) => {
                 onClick={() => { setIsOpen(false); onOpenPalette?.(); }}
                 className="self-start mt-2 px-3 py-1.5 text-sm border border-accent text-accent"
               >
-                ./connect
+                ./run
               </button>
             </div>
           </motion.div>
