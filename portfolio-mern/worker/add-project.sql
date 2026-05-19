@@ -7,6 +7,6 @@ INSERT INTO projects (id, title, description, image, link, tags, created_at) VAL
   'PromptOps is an AI-powered prompt management system that helps you organize, optimize, and share your prompts.',
   '',
   'https://github.com/v4run3/PromptOps',
-  '["Python","FastAPI","Javascript","MLOps", "DevOps","LLM"]',
+  '["Python","FastAPI","Javascript","MLOps","DevOps","LLM"]',
   strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 );
