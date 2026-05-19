@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-[12px] text-white/40 font-mono">
         <div className="flex items-center gap-3">
           <span className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot" />
-          <span>varun.bhonslay — © {year}</span>
+          <span>varunbhonslay.is-a.dev — © {year}</span>
         </div>
         <div className="flex items-center gap-2 text-white/30">
           <span>built with</span>

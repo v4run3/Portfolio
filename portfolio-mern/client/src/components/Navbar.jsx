@@ -37,7 +37,7 @@ const Navbar = ({ onOpenPalette }) => {
         >
           <span className="w-2 h-2 rounded-full bg-accent pulse-dot" />
           <span className="text-sm tracking-wider text-white/90 group-hover:text-accent transition-colors">
-            varun.bhonslay<span className="text-accent">.dev</span>
+            varunbhonslay<span className="text-accent">.is-a.dev</span>
           </span>
         </Link>
 

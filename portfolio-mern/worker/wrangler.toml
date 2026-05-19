@@ -5,7 +5,7 @@ compatibility_date = "2025-01-15"
 # Allowed origins for CORS. Comma-separated list.
 # Add your Pages preview URLs if you want them to call the API too.
 [vars]
-ALLOWED_ORIGINS = "https://portfolio-iio.pages.dev,http://localhost:5173"
+ALLOWED_ORIGINS = "https://varunbhonslay.is-a.dev,https://portfolio-iio.pages.dev,http://localhost:5173"
 
 # D1 database binding. After running `wrangler d1 create portfolio`,
 # paste the returned database_id below.
