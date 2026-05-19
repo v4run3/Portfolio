@@ -3,10 +3,10 @@
 
 INSERT INTO projects (id, title, description, image, link, tags, created_at) VALUES (
   lower(hex(randomblob(16))),
-  'PromptOps',
-  'PromptOps is an AI-powered prompt management system that helps you organize, optimize, and share your prompts.',
+  'CI-CD Failure Predictor',
+  'CI-CD Failure Predictor is an AI-powered system that predicts failures in CI/CD pipelines.',
   '',
-  'https://github.com/v4run3/PromptOps',
-  '["Python","FastAPI","Javascript","MLOps","DevOps","LLM"]',
+  'https://github.com/v4run3/ci-cd-failure-predictor',
+  '["Python","React","Docker","MLOps","DevOps","LLM","Kubernetes","Github Actions"]',
   strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 );

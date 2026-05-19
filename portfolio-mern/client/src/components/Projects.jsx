@@ -46,7 +46,7 @@ const ProjectCard = ({ project, index }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.45, delay: index * 0.06 }}
-      className="card group flex flex-col overflow-hidden no-underline relative"
+      className="card group flex flex-col overflow-hidden no-underline relative w-full"
     >
       {/* window chrome */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-surface2 shrink-0">
@@ -155,11 +155,35 @@ const Projects = () => {
           <div className="text-white/40 text-sm">No projects yet.</div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {projects.map((project, i) => (
-            <ProjectCard key={project._id} project={project} index={i} />
-          ))}
-        </div>
+        {projects.length > 0 && (
+          <div className="relative">
+            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-5 pb-2">
+              {projects.map((project, i) => (
+                <div
+                  key={project._id}
+                  className="w-[85vw] sm:w-[60vw] md:w-[360px] shrink-0 snap-start flex"
+                >
+                  <ProjectCard project={project} index={i} />
+                </div>
+              ))}
+              {/* trailing spacer so the last card can snap fully to the left */}
+              <div className="w-1 shrink-0" aria-hidden="true" />
+            </div>
+
+            {projects.length > 3 && (
+              <>
+                <div
+                  className="pointer-events-none absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-bg via-bg/70 to-transparent hidden md:block"
+                  aria-hidden="true"
+                />
+                <div className="mt-3 flex items-center gap-2 text-[11px] text-white/40">
+                  <span className="text-accent">→</span>
+                  <span>scroll for more</span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
