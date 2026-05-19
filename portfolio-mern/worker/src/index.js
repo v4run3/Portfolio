@@ -52,28 +52,6 @@ async function listProjects(request, env) {
   return json(results.map(projectFromRow), {}, request, env);
 }
 
-async function createProject(request, env) {
-  const body = await request.json();
-  const { title, description, image, link, tags } = body ?? {};
-  if (!title || !description || !image || !link) {
-    return json({ message: 'title, description, image, link are required' }, { status: 400 }, request, env);
-  }
-  const id = crypto.randomUUID();
-  const createdAt = new Date().toISOString();
-  const tagsJson = JSON.stringify(Array.isArray(tags) ? tags : []);
-  await env.DB.prepare(
-    'INSERT INTO projects (id, title, description, image, link, tags, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  )
-    .bind(id, title, description, image, link, tagsJson, createdAt)
-    .run();
-  return json(
-    projectFromRow({ id, title, description, image, link, tags: tagsJson, created_at: createdAt }),
-    { status: 201 },
-    request,
-    env
-  );
-}
-
 async function createMessage(request, env) {
   const body = await request.json();
   const { name, email, message } = body ?? {};
@@ -113,7 +91,6 @@ export default {
       }
 
       if (pathname === '/api/projects' && method === 'GET') return listProjects(request, env);
-      if (pathname === '/api/projects' && method === 'POST') return createProject(request, env);
       if (pathname === '/api/messages' && method === 'POST') return createMessage(request, env);
 
       return json({ message: 'Not found' }, { status: 404 }, request, env);

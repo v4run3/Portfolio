@@ -7,6 +7,8 @@
     "deploy": "wrangler deploy",
     "db:init": "wrangler d1 execute portfolio --remote --file=./schema.sql",
     "db:seed": "wrangler d1 execute portfolio --remote --file=./seed.sql",
+    "db:add": "wrangler d1 execute portfolio --remote --file=./add-project.sql",
+    "db:list": "wrangler d1 execute portfolio --remote --command=\"SELECT id, title, created_at FROM projects ORDER BY created_at DESC\"",
     "db:init:local": "wrangler d1 execute portfolio --local --file=./schema.sql",
     "db:seed:local": "wrangler d1 execute portfolio --local --file=./seed.sql"
   },
