@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { FaArrowUpRightFromSquare, FaGithub, FaCodeBranch } from 'react-icons/fa6';
+import {
+  FaArrowUpRightFromSquare, FaGithub, FaCodeBranch,
+  FaChevronLeft, FaChevronRight,
+} from 'react-icons/fa6';
 
 const SectionLabel = ({ children, num, count }) => (
   <div className="flex items-center gap-4 mb-12">
@@ -121,6 +124,9 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -130,6 +136,31 @@ const Projects = () => {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, [projects.length]);
+
+  const scrollByDir = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const firstCard = el.querySelector('[data-card]');
+    const step = (firstCard?.clientWidth ?? 360) + 20;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
 
   return (
     <section id="projects" className="relative px-6 md:px-12 py-24 border-t border-border">
@@ -157,10 +188,14 @@ const Projects = () => {
 
         {projects.length > 0 && (
           <div className="relative">
-            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-5 pb-2">
+            <div
+              ref={scrollRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-5 pb-2"
+            >
               {projects.map((project, i) => (
                 <div
                   key={project._id}
+                  data-card
                   className="w-[85vw] sm:w-[60vw] md:w-[360px] shrink-0 snap-start flex"
                 >
                   <ProjectCard project={project} index={i} />
@@ -170,17 +205,50 @@ const Projects = () => {
               <div className="w-1 shrink-0" aria-hidden="true" />
             </div>
 
-            {projects.length > 3 && (
-              <>
-                <div
-                  className="pointer-events-none absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-bg via-bg/70 to-transparent hidden md:block"
-                  aria-hidden="true"
-                />
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-white/40">
-                  <span className="text-accent">→</span>
-                  <span>scroll for more</span>
-                </div>
-              </>
+            {/* edge fades (desktop only) */}
+            <div
+              className={`pointer-events-none absolute top-0 left-0 bottom-2 w-20 bg-gradient-to-r from-bg via-bg/70 to-transparent hidden md:block transition-opacity duration-200 ${
+                canScrollLeft ? 'opacity-100' : 'opacity-0'
+              }`}
+              aria-hidden="true"
+            />
+            <div
+              className={`pointer-events-none absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-bg via-bg/70 to-transparent hidden md:block transition-opacity duration-200 ${
+                canScrollRight ? 'opacity-100' : 'opacity-0'
+              }`}
+              aria-hidden="true"
+            />
+
+            {/* chevron buttons — desktop only; mobile users swipe natively */}
+            <button
+              type="button"
+              onClick={() => scrollByDir(-1)}
+              disabled={!canScrollLeft}
+              aria-label="scroll left"
+              className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center border border-border bg-bg/80 backdrop-blur text-white/70 hover:text-accent hover:border-accent/50 transition-all ${
+                canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <FaChevronLeft size={12} />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByDir(1)}
+              disabled={!canScrollRight}
+              aria-label="scroll right"
+              className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center border border-border bg-bg/80 backdrop-blur text-white/70 hover:text-accent hover:border-accent/50 transition-all ${
+                canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <FaChevronRight size={12} />
+            </button>
+
+            {/* mobile-only swipe hint */}
+            {projects.length > 1 && (
+              <div className="mt-3 flex md:hidden items-center gap-2 text-[11px] text-white/40">
+                <span className="text-accent">↔</span>
+                <span>swipe for more</span>
+              </div>
             )}
           </div>
         )}
