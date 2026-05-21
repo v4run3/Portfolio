@@ -86,18 +86,19 @@ const Now = () => {
         repos.value.forEach((r) => {
           if (r.language) langs[r.language] = (langs[r.language] || 0) + 1;
         });
-        const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
+        const sorted = Object.entries(langs).sort((a, b) => b[1] - a[1]);
         nextStats = {
           repos: nextStats?.repos ?? repos.value.length,
           followers: nextStats?.followers ?? null,
           stars,
-          topLang,
+          topLang: sorted[0]?.[0] ?? '—',
+          topLangs: sorted.slice(0, 4).map(([name, count]) => ({ name, count })),
         };
       }
 
       const mapped =
         evs.status === 'fulfilled' && Array.isArray(evs.value)
-          ? evs.value.map(describeEvent).filter(Boolean).slice(0, 4)
+          ? evs.value.map(describeEvent).filter(Boolean).slice(0, 6)
           : [];
 
       setStats(nextStats);
@@ -153,6 +154,35 @@ const Now = () => {
             <div className="text-white/40">— github unavailable —</div>
           )}
         </div>
+
+        {/* languages */}
+        {status !== 'loading' && stats?.topLangs?.length > 0 && (
+          <>
+            <div className="h-px bg-border" />
+            <div>
+              <div className="text-accent mb-3">[ languages ]</div>
+              <div className="space-y-2">
+                {stats.topLangs.map((lang) => {
+                  const max = stats.topLangs[0].count || 1;
+                  const pct = Math.max(8, Math.round((lang.count / max) * 100));
+                  return (
+                    <div key={lang.name} className="flex items-center gap-3">
+                      <span className="text-white/70 w-24 shrink-0 truncate text-[12px]">
+                        {lang.name}
+                      </span>
+                      <div className="flex-1 h-1.5 bg-bg border border-border overflow-hidden">
+                        <div className="h-full bg-accent/70" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-white/40 text-[11px] w-5 text-right tabular-nums">
+                        {lang.count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* divider */}
         <div className="h-px bg-border" />

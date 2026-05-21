@@ -17,6 +17,7 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
   const [error, setError] = useState(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const typerRef = useRef(null);
 
   useEffect(() => {
     if (autoFocus) {
@@ -25,9 +26,13 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
     }
   }, [autoFocus]);
 
+  // keep the transcript pinned to the bottom while text streams in
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
+
+  // stop the typewriter if the component unmounts mid-stream
+  useEffect(() => () => { if (typerRef.current) clearInterval(typerRef.current); }, []);
 
   const ask = async (q) => {
     const question = (q ?? input).trim();
@@ -38,6 +43,42 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
     const history = [...messages, { role: 'user', content: question }];
     setMessages([...history, { role: 'assistant', content: '' }]);
     setBusy(true);
+
+    let target = '';        // full text received from the stream so far
+    let shown = 0;          // chars currently revealed on screen
+    let networkDone = false;
+    let failed = false;
+
+    const finish = () => {
+      setBusy(false);
+      inputRef.current?.focus();
+    };
+
+    // Typewriter: drains `target` into the visible message a few chars per tick,
+    // decoupled from network arrival so words appear one-by-one, terminal-style.
+    typerRef.current = setInterval(() => {
+      if (shown < target.length) {
+        const backlog = target.length - shown;
+        shown += Math.max(1, Math.ceil(backlog / 50)); // speed up if network raced ahead
+        const text = target.slice(0, shown);
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { role: 'assistant', content: text };
+          return copy;
+        });
+      } else if (networkDone) {
+        clearInterval(typerRef.current);
+        typerRef.current = null;
+        if (!failed && !target.trim()) {
+          setMessages((prev) => {
+            const copy = [...prev];
+            copy[copy.length - 1] = { role: 'assistant', content: '(no response — try again)' };
+            return copy;
+          });
+        }
+        finish();
+      }
+    }, 18);
 
     try {
       const res = await fetch(`${apiUrl}/api/chat`, {
@@ -57,7 +98,6 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let acc = '';
       let buffer = '';
 
       // eslint-disable-next-line no-constant-condition
@@ -74,33 +114,20 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
           if (data === '[DONE]') continue;
           try {
             const j = JSON.parse(data);
-            if (j.response) {
-              acc += j.response;
-              setMessages((prev) => {
-                const copy = [...prev];
-                copy[copy.length - 1] = { role: 'assistant', content: acc };
-                return copy;
-              });
-            }
+            if (j.response) target += j.response; // feed the typewriter buffer
           } catch {
             /* ignore partial chunks */
           }
         }
       }
-
-      if (!acc.trim()) {
-        setMessages((prev) => {
-          const copy = [...prev];
-          copy[copy.length - 1] = { role: 'assistant', content: '(no response — try again)' };
-          return copy;
-        });
-      }
+      networkDone = true;
     } catch (err) {
+      failed = true;
+      networkDone = true;
+      if (typerRef.current) { clearInterval(typerRef.current); typerRef.current = null; }
       setError(err.message ?? 'request failed');
       setMessages((prev) => prev.slice(0, -1)); // drop the empty assistant bubble
-    } finally {
-      setBusy(false);
-      inputRef.current?.focus();
+      finish();
     }
   };
 
