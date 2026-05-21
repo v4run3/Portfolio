@@ -13,3 +13,15 @@ ALLOWED_ORIGINS = "https://varunbhonslay.is-a.dev,https://portfolio-iio.pages.de
 binding = "DB"
 database_name = "portfolio"
 database_id = "0a21e47c-e007-4dc2-b988-a47ca301ad9d"
+
+# Workers AI — powers the /api/chat endpoint (the portfolio assistant)
+[ai]
+binding = "AI"
+
+# Per-IP rate limiter for /api/chat — 8 requests per 60s window.
+# Protects the daily Workers AI quota from spam/abuse.
+[[unsafe.bindings]]
+name = "CHAT_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "2001"
+simple = { limit = 8, period = 60 }

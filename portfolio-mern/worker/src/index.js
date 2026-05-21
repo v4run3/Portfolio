@@ -73,6 +73,92 @@ async function createMessage(request, env) {
   );
 }
 
+const CHAT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+
+async function buildSystemPrompt(env) {
+  let projectContext = '(no projects listed)';
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT title, description, tags FROM projects ORDER BY created_at DESC'
+    ).all();
+    if (results.length) {
+      projectContext = results
+        .map((p) => {
+          let tags = '';
+          try { tags = JSON.parse(p.tags).filter(Boolean).join(', '); } catch { /* ignore */ }
+          return `- ${p.title}: ${p.description}${tags ? ` [${tags}]` : ''}`;
+        })
+        .join('\n');
+    }
+  } catch { /* projects optional */ }
+
+  return `You are the AI assistant embedded in Varun Bhonslay's developer portfolio website. You answer visitors' questions about Varun, referring to him as "Varun". Keep answers concise (2-4 sentences), friendly, and professional. ONLY answer questions about Varun, his skills, projects, and background. If a question is unrelated or you lack the information, politely say you can only help with questions about Varun and his work. Never invent facts.
+
+ABOUT VARUN:
+- First-year Master's student in Computer Engineering at K. J. Somaiya College of Engineering (2025-2027).
+- Full-stack developer focused on AI/ML and the MERN stack. Based in Mumbai, India.
+- Open to freelance work and research collaborations.
+- Skills: React, TypeScript, Node.js, Express, MongoDB, Cloudflare Workers & D1, Python, LLMs, NLP, TensorFlow, Git.
+
+PROJECTS:
+${projectContext}
+
+This portfolio is built with React + Vite on Cloudflare Pages, backed by Cloudflare Workers + D1, and this chat runs on Cloudflare Workers AI.`;
+}
+
+async function chat(request, env) {
+  if (!env.AI) {
+    return json({ message: 'AI is not configured' }, { status: 503 }, request, env);
+  }
+
+  // Per-IP rate limit — protects the daily Workers AI quota from spam.
+  if (env.CHAT_RATE_LIMITER) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'anonymous';
+    const { success } = await env.CHAT_RATE_LIMITER.limit({ key: ip });
+    if (!success) {
+      return json(
+        { message: 'Too many messages — please wait a minute before asking again.' },
+        { status: 429 },
+        request,
+        env
+      );
+    }
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ message: 'invalid JSON body' }, { status: 400 }, request, env);
+  }
+
+  const incoming = Array.isArray(body?.messages) ? body.messages : [];
+  const messages = incoming
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .slice(-6)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
+
+  if (messages.length === 0) {
+    return json({ message: 'messages required' }, { status: 400 }, request, env);
+  }
+
+  const system = await buildSystemPrompt(env);
+
+  const stream = await env.AI.run(CHAT_MODEL, {
+    messages: [{ role: 'system', content: system }, ...messages],
+    stream: true,
+    max_tokens: 400,
+  });
+
+  return new Response(stream, {
+    headers: {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      ...corsHeaders(request, env),
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -92,6 +178,7 @@ export default {
 
       if (pathname === '/api/projects' && method === 'GET') return listProjects(request, env);
       if (pathname === '/api/messages' && method === 'POST') return createMessage(request, env);
+      if (pathname === '/api/chat' && method === 'POST') return chat(request, env);
 
       return json({ message: 'Not found' }, { status: 404 }, request, env);
     } catch (err) {

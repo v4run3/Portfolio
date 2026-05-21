@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { scroller } from 'react-scroll';
 import {
   FaArrowRight, FaGithub, FaLinkedin, FaDownload,
-  FaEnvelope, FaLink, FaCheck,
+  FaEnvelope, FaLink, FaCheck, FaWandMagicSparkles, FaChevronLeft,
 } from 'react-icons/fa6';
+import AiChat from './AiChat';
 
 const NAV_OFFSET = -72;
 
@@ -28,12 +29,20 @@ const CommandPalette = ({ open, onClose }) => {
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState('commands'); // 'commands' | 'chat'
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
   const commands = useMemo(() => {
     const close = () => onClose();
     return [
+      {
+        group: 'assistant',
+        label: 'ask ai about Varun',
+        hint: 'chat · llama-3.1',
+        icon: FaWandMagicSparkles,
+        run: () => setMode('chat'),
+      },
       ...sections.map((s) => ({
         group: 'navigate',
         label: `go to ${s.label}`,
@@ -104,6 +113,7 @@ const CommandPalette = ({ open, onClose }) => {
       setQuery('');
       setActiveIdx(0);
       setCopied(false);
+      setMode('commands');
       const t = setTimeout(() => inputRef.current?.focus(), 20);
       return () => clearTimeout(t);
     }
@@ -133,14 +143,20 @@ const CommandPalette = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, filtered.length - 1)); }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (mode === 'chat') setMode('commands');
+        else onClose();
+        return;
+      }
+      if (mode !== 'commands') return; // chat handles its own keys
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, filtered.length - 1)); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, 0)); }
       else if (e.key === 'Enter') { e.preventDefault(); filtered[activeIdx]?.run(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, filtered, activeIdx]);
+  }, [open, onClose, filtered, activeIdx, mode]);
 
   // Build groups while preserving the global index for keyboard nav
   const grouped = useMemo(() => {
@@ -174,6 +190,27 @@ const CommandPalette = ({ open, onClose }) => {
             onMouseDown={(e) => e.stopPropagation()}
             className="w-full max-w-xl card overflow-hidden shadow-2xl shadow-black/60"
           >
+            {mode === 'chat' ? (
+              <>
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setMode('commands')}
+                    className="inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-accent transition-colors"
+                  >
+                    <FaChevronLeft size={10} /> back
+                  </button>
+                  <span className="flex-1 text-center text-[12px] text-white/40 inline-flex items-center justify-center gap-1.5">
+                    <FaWandMagicSparkles size={10} className="text-accent" /> ask ai
+                  </span>
+                  <kbd className="px-1.5 py-0.5 text-[10px] text-white/40 border border-border bg-bg">
+                    esc
+                  </kbd>
+                </div>
+                <AiChat variant="modal" autoFocus />
+              </>
+            ) : (
+            <>
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
               <span className="text-accent text-sm select-none">{`>`}</span>
               <input
@@ -257,6 +294,8 @@ const CommandPalette = ({ open, onClose }) => {
                 <kbd className="px-1 border border-border bg-bg">⌃K</kbd> toggle
               </span>
             </div>
+            </>
+            )}
           </motion.div>
         </motion.div>
       )}
