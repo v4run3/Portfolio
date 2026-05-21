@@ -5,6 +5,7 @@ import About from './components/About';
 import Stack from './components/Stack';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
+import AskSection from './components/AskSection';
 import Footer from './components/Footer';
 import CommandPalette from './components/CommandPalette';
 
@@ -31,6 +32,7 @@ function App() {
         <Stack />
         <Projects />
         <Contact />
+        <AskSection />
       </main>
       <Footer />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />

@@ -8,6 +8,7 @@ const links = [
   { num: '02', name: 'stack', to: 'stack' },
   { num: '03', name: 'projects', to: 'projects' },
   { num: '04', name: 'contact', to: 'contact' },
+  { num: '05', name: 'ask', to: 'ask' },
 ];
 
 const Navbar = ({ onOpenPalette }) => {
