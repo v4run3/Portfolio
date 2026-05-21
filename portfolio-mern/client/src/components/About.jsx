@@ -80,7 +80,7 @@ const About = () => {
                 {/* Bottom JSON overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
                   <pre className="text-[11px] leading-relaxed text-white/80">
-{`{
+                    {`{
   "name":   "Varun Bhonslay",
   "role":   "Full-stack + AI",
   "lvl":    "Master's, year 1",
@@ -100,7 +100,7 @@ const About = () => {
                   <FaGithub size={14} /> github
                 </a>
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/in/varun-vinay-bhonslay/"
                   target="_blank"
                   rel="noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 py-3 text-xs text-white/70 hover:text-accent hover:bg-surface2 transition-colors"

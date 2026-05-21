@@ -73,6 +73,76 @@ async function createMessage(request, env) {
   );
 }
 
+const GH_USER = 'v4run3';
+
+function ghHeaders(env) {
+  const h = {
+    'User-Agent': 'varunbhonslay-portfolio',
+    Accept: 'application/vnd.github+json',
+  };
+  if (env.GITHUB_TOKEN) h.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
+  return h;
+}
+
+function ghShortRepo(fullName) {
+  const [owner, repo] = fullName.split('/');
+  return owner === GH_USER ? repo : fullName;
+}
+
+function ghMapEvent(e) {
+  const base = { repo: ghShortRepo(e.repo.name), createdAt: e.created_at };
+  switch (e.type) {
+    case 'PushEvent': {
+      const msg = e.payload.commits?.[e.payload.commits.length - 1]?.message?.split('\n')[0];
+      return { ...base, kind: 'push', detail: msg ?? '' };
+    }
+    case 'WatchEvent': return { ...base, kind: 'star', detail: '' };
+    case 'CreateEvent': return { ...base, kind: 'new', detail: e.payload.ref_type ?? '' };
+    case 'PullRequestEvent': return { ...base, kind: 'pr', detail: e.payload.pull_request?.title ?? '' };
+    case 'ForkEvent': return { ...base, kind: 'fork', detail: '' };
+    case 'IssuesEvent': return { ...base, kind: 'issue', detail: e.payload.issue?.title ?? '' };
+    default: return null;
+  }
+}
+
+// Proxies + caches GitHub data so visitor IPs never hit GitHub's 60/hr limit.
+async function github(request, env) {
+  const opts = { headers: ghHeaders(env), cf: { cacheTtl: 600, cacheEverything: true } };
+  const base = `https://api.github.com/users/${GH_USER}`;
+
+  const [userRes, reposRes, eventsRes] = await Promise.allSettled([
+    fetch(base, opts).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+    fetch(`${base}/repos?per_page=100&sort=pushed`, opts).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+    fetch(`${base}/events/public?per_page=30`, opts).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+  ]);
+
+  let stats = null;
+  if (userRes.status === 'fulfilled') {
+    stats = { repos: userRes.value.public_repos, followers: userRes.value.followers, stars: null, topLang: null, topLangs: [] };
+  }
+  if (reposRes.status === 'fulfilled' && Array.isArray(reposRes.value)) {
+    const repos = reposRes.value;
+    const stars = repos.reduce((s, r) => s + (r.stargazers_count || 0), 0);
+    const langs = {};
+    repos.forEach((r) => { if (r.language) langs[r.language] = (langs[r.language] || 0) + 1; });
+    const sorted = Object.entries(langs).sort((a, b) => b[1] - a[1]);
+    stats = {
+      repos: stats?.repos ?? repos.length,
+      followers: stats?.followers ?? null,
+      stars,
+      topLang: sorted[0]?.[0] ?? '—',
+      topLangs: sorted.slice(0, 4).map(([name, count]) => ({ name, count })),
+    };
+  }
+
+  const events =
+    eventsRes.status === 'fulfilled' && Array.isArray(eventsRes.value)
+      ? eventsRes.value.map(ghMapEvent).filter(Boolean).slice(0, 6)
+      : [];
+
+  return json({ stats, events }, { headers: { 'cache-control': 'public, max-age=300' } }, request, env);
+}
+
 const CHAT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 
 async function buildSystemPrompt(env) {
@@ -178,6 +248,7 @@ export default {
 
       if (pathname === '/api/projects' && method === 'GET') return listProjects(request, env);
       if (pathname === '/api/messages' && method === 'POST') return createMessage(request, env);
+      if (pathname === '/api/github' && method === 'GET') return github(request, env);
       if (pathname === '/api/chat' && method === 'POST') return chat(request, env);
 
       return json({ message: 'Not found' }, { status: 404 }, request, env);

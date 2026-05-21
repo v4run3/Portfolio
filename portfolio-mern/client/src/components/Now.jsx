@@ -5,6 +5,16 @@ import {
 } from 'react-icons/fa6';
 
 const GITHUB_USER = 'v4run3';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const EVENT_META = {
+  push: { Icon: FaCodeCommit, label: 'push' },
+  star: { Icon: FaStar, label: 'star' },
+  new: { Icon: FaCodeBranch, label: 'new' },
+  pr: { Icon: FaCodePullRequest, label: 'pr' },
+  fork: { Icon: FaCodeFork, label: 'fork' },
+  issue: { Icon: FaCircleDot, label: 'issue' },
+};
 
 function timeAgo(iso) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -16,34 +26,6 @@ function timeAgo(iso) {
   const d = Math.floor(h / 24);
   if (d < 7) return `${d}d`;
   return `${Math.floor(d / 7)}w`;
-}
-
-function shortRepo(fullName) {
-  const [owner, repo] = fullName.split('/');
-  return owner === GITHUB_USER ? repo : fullName;
-}
-
-function describeEvent(e) {
-  const repo = shortRepo(e.repo.name);
-  const time = timeAgo(e.created_at);
-  switch (e.type) {
-    case 'PushEvent': {
-      const msg = e.payload.commits?.[e.payload.commits.length - 1]?.message?.split('\n')[0];
-      return { Icon: FaCodeCommit, label: 'push', repo, detail: msg ?? '', time };
-    }
-    case 'WatchEvent':
-      return { Icon: FaStar, label: 'star', repo, detail: '', time };
-    case 'CreateEvent':
-      return { Icon: FaCodeBranch, label: 'new', repo, detail: e.payload.ref_type ?? '', time };
-    case 'PullRequestEvent':
-      return { Icon: FaCodePullRequest, label: 'pr', repo, detail: e.payload.pull_request?.title ?? '', time };
-    case 'ForkEvent':
-      return { Icon: FaCodeFork, label: 'fork', repo, detail: '', time };
-    case 'IssuesEvent':
-      return { Icon: FaCircleDot, label: 'issue', repo, detail: e.payload.issue?.title ?? '', time };
-    default:
-      return null;
-  }
 }
 
 const Stat = ({ label, value }) => (
@@ -61,50 +43,17 @@ const Now = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const base = `https://api.github.com/users/${GITHUB_USER}`;
-    const json = (url) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
-
-    Promise.allSettled([
-      json(base),
-      json(`${base}/repos?per_page=100&sort=pushed`),
-      json(`${base}/events/public?per_page=30`),
-    ]).then(([user, repos, evs]) => {
-      if (cancelled) return;
-
-      let nextStats = null;
-      if (user.status === 'fulfilled') {
-        nextStats = {
-          repos: user.value.public_repos,
-          followers: user.value.followers,
-          stars: null,
-          topLang: null,
-        };
-      }
-      if (repos.status === 'fulfilled' && Array.isArray(repos.value)) {
-        const stars = repos.value.reduce((sum, r) => sum + (r.stargazers_count || 0), 0);
-        const langs = {};
-        repos.value.forEach((r) => {
-          if (r.language) langs[r.language] = (langs[r.language] || 0) + 1;
-        });
-        const sorted = Object.entries(langs).sort((a, b) => b[1] - a[1]);
-        nextStats = {
-          repos: nextStats?.repos ?? repos.value.length,
-          followers: nextStats?.followers ?? null,
-          stars,
-          topLang: sorted[0]?.[0] ?? '—',
-          topLangs: sorted.slice(0, 4).map(([name, count]) => ({ name, count })),
-        };
-      }
-
-      const mapped =
-        evs.status === 'fulfilled' && Array.isArray(evs.value)
-          ? evs.value.map(describeEvent).filter(Boolean).slice(0, 6)
-          : [];
-
-      setStats(nextStats);
-      setEvents(mapped);
-      setStatus(nextStats || mapped.length ? 'ok' : 'error');
-    });
+    // Hits our Worker (cached) instead of GitHub directly, so visitor IPs
+    // never run into GitHub's 60/hr unauthenticated rate limit.
+    fetch(`${apiUrl}/api/github`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => {
+        if (cancelled) return;
+        setStats(data.stats ?? null);
+        setEvents(Array.isArray(data.events) ? data.events : []);
+        setStatus(data.stats || data.events?.length ? 'ok' : 'error');
+      })
+      .catch(() => !cancelled && setStatus('error'));
 
     return () => { cancelled = true; };
   }, []);
@@ -201,21 +150,25 @@ const Now = () => {
           )}
           {events.length > 0 && (
             <ul className="space-y-2.5">
-              {events.map((e, i) => (
-                <li key={i} className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <e.Icon size={11} className="text-accent shrink-0" />
-                    <span className="text-white/50 w-10 shrink-0">{e.label}</span>
-                    <span className="text-white/85 truncate flex-1">{e.repo}</span>
-                    <span className="text-white/30 text-[10px] shrink-0">{e.time}</span>
-                  </div>
-                  {e.detail && (
-                    <div className="pl-[48px] text-white/40 text-[11px] truncate">
-                      {e.detail}
+              {events.map((e, i) => {
+                const meta = EVENT_META[e.kind] ?? { Icon: FaCodeCommit, label: e.kind };
+                const Icon = meta.Icon;
+                return (
+                  <li key={i} className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <Icon size={11} className="text-accent shrink-0" />
+                      <span className="text-white/50 w-10 shrink-0">{meta.label}</span>
+                      <span className="text-white/85 truncate flex-1">{e.repo}</span>
+                      <span className="text-white/30 text-[10px] shrink-0">{timeAgo(e.createdAt)}</span>
                     </div>
-                  )}
-                </li>
-              ))}
+                    {e.detail && (
+                      <div className="pl-[48px] text-white/40 text-[11px] truncate">
+                        {e.detail}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
