@@ -84,7 +84,7 @@ const About = () => {
   "name":   "Varun Bhonslay",
   "role":   "Full-stack + AI",
   "lvl":    "Master's, year 1",
-  "stack":  ["MERN","Python"]
+  "stack":  ["Python","AI/ML","MERN"]
 }`}
                   </pre>
                 </div>
