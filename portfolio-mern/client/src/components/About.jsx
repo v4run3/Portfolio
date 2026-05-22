@@ -73,7 +73,7 @@ const About = () => {
 
               <div className="aspect-[4/5] bg-surface2 relative overflow-hidden">
                 <img
-                  src="https://placehold.co/600x750/181818/86efac?font=jetbrains+mono&text=VB"
+                  src="/varun.jpg"
                   alt="Varun Bhonslay"
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                 />
