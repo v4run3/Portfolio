@@ -177,7 +177,10 @@ const About = () => {
 
             <div>
               <a
-                href="#"
+                href="/Varun-Bhonslay-CV.pdf"
+                target="_blank"
+                rel="noreferrer"
+                download
                 className="inline-flex items-center gap-2 px-4 py-2.5 border border-accent text-accent text-sm hover:bg-accent hover:text-bg transition-colors"
               >
                 <FaDownload size={12} /> download_cv.pdf

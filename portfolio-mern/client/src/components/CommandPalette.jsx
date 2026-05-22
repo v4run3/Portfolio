@@ -69,7 +69,7 @@ const CommandPalette = ({ open, onClose }) => {
         label: 'download cv',
         hint: 'pdf',
         icon: FaDownload,
-        run: () => { window.open('#', '_blank', 'noopener'); close(); },
+        run: () => { window.open('/Varun-Bhonslay-CV.pdf', '_blank', 'noopener'); close(); },
       },
       {
         group: 'actions',
