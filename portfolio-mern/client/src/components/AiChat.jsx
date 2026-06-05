@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaArrowUp } from 'react-icons/fa6';
+import { apiUrl } from '../config';
 
 const SUGGESTIONS = [
   'What is Varun working on?',
   'What are his strongest skills?',
-  'Tell me about PromptOps',
+  'Tell me about qwen3.5-from-scratch',
   'Is he open to freelance?',
 ];
-
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const AiChat = ({ variant = 'section', autoFocus = false }) => {
   const [messages, setMessages] = useState([]); // { role: 'user'|'assistant', content }
@@ -100,7 +99,6 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;

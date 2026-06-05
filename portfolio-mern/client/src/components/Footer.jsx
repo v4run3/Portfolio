@@ -1,4 +1,5 @@
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { linkedInUrl } from '../config';
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -30,7 +31,7 @@ const Footer = () => {
             <FaGithub size={14} />
           </a>
           <a
-            href="#"
+            href={linkedInUrl}
             target="_blank"
             rel="noreferrer"
             className="hover:text-accent transition-colors"

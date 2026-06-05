@@ -105,8 +105,8 @@ function ghMapEvent(e) {
   }
 }
 
-// Proxies + caches GitHub data so visitor IPs never hit GitHub's 60/hr limit.
-async function github(request, env) {
+// Fetches + caches GitHub data so visitor IPs never hit GitHub's 60/hr limit.
+async function fetchGitHubData(env) {
   const opts = { headers: ghHeaders(env), cf: { cacheTtl: 600, cacheEverything: true } };
   const base = `https://api.github.com/users/${GH_USER}`;
 
@@ -117,6 +117,7 @@ async function github(request, env) {
   ]);
 
   let stats = null;
+  let recentRepos = [];
   if (userRes.status === 'fulfilled') {
     stats = { repos: userRes.value.public_repos, followers: userRes.value.followers, stars: null, topLang: null, topLangs: [] };
   }
@@ -133,14 +134,54 @@ async function github(request, env) {
       topLang: sorted[0]?.[0] ?? '—',
       topLangs: sorted.slice(0, 4).map(([name, count]) => ({ name, count })),
     };
+    recentRepos = repos
+      .filter((r) => !r.fork)
+      .slice(0, 8)
+      .map((r) => ({
+        name: r.name,
+        description: r.description ?? '',
+        language: r.language ?? '',
+        pushedAt: r.pushed_at,
+        url: r.html_url,
+      }));
   }
 
-  const events =
+  const allEvents =
     eventsRes.status === 'fulfilled' && Array.isArray(eventsRes.value)
-      ? eventsRes.value.map(ghMapEvent).filter(Boolean).slice(0, 6)
+      ? eventsRes.value.map(ghMapEvent).filter(Boolean)
       : [];
 
+  return { stats, events: allEvents.slice(0, 6), recentRepos, allEvents };
+}
+
+async function github(request, env) {
+  const { stats, events } = await fetchGitHubData(env);
   return json({ stats, events }, { headers: { 'cache-control': 'public, max-age=300' } }, request, env);
+}
+
+function formatGitHubContext({ recentRepos, allEvents }) {
+  const lines = [];
+
+  if (recentRepos.length) {
+    lines.push('Recently active repositories (most recent push first):');
+    for (const r of recentRepos.slice(0, 6)) {
+      const lang = r.language ? ` [${r.language}]` : '';
+      const desc = r.description ? ` — ${r.description}` : '';
+      lines.push(`- ${r.name}${lang}${desc} (last push: ${r.pushedAt}, ${r.url})`);
+    }
+  }
+
+  const pushes = allEvents.filter((e) => e.kind === 'push').slice(0, 8);
+  if (pushes.length) {
+    lines.push('');
+    lines.push('Recent commits (from public GitHub activity):');
+    for (const e of pushes) {
+      const detail = e.detail ? ` — "${e.detail}"` : '';
+      lines.push(`- push to ${e.repo}${detail} (${e.createdAt})`);
+    }
+  }
+
+  return lines.length ? lines.join('\n') : '(GitHub activity unavailable)';
 }
 
 const CHAT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
@@ -162,6 +203,12 @@ async function buildSystemPrompt(env) {
     }
   } catch { /* projects optional */ }
 
+  let githubContext = '(GitHub activity unavailable)';
+  try {
+    const gh = await fetchGitHubData(env);
+    githubContext = formatGitHubContext(gh);
+  } catch { /* github optional */ }
+
   return `You are the AI assistant embedded in Varun Bhonslay's developer portfolio website. You answer visitors' questions about Varun, referring to him as "Varun". Keep answers concise (2-4 sentences), friendly, and professional. ONLY answer questions about Varun, his skills, projects, and background. If a question is unrelated or you lack the information, politely say you can only help with questions about Varun and his work. Never invent facts.
 
 ABOUT VARUN:
@@ -170,8 +217,13 @@ ABOUT VARUN:
 - Open to freelance work and research collaborations.
 - Skills: React, TypeScript, Node.js, Express, MongoDB, Cloudflare Workers & D1, Python, LLMs, NLP, TensorFlow, Git.
 
-PROJECTS:
+PROJECTS (portfolio highlights):
 ${projectContext}
+
+RECENT GITHUB ACTIVITY (live from github.com/${GH_USER}):
+${githubContext}
+
+When asked what Varun is working on, his current focus, latest repo, or recent coding activity, answer using RECENT GITHUB ACTIVITY above. Name the most recently pushed repository first and mention recent commits when available. Cross-reference PROJECTS when a repo matches a listed project.
 
 This portfolio is built with React + Vite on Cloudflare Pages, backed by Cloudflare Workers + D1, and this chat runs on Cloudflare Workers AI.`;
 }

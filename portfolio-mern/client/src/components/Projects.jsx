@@ -5,6 +5,7 @@ import {
   FaArrowUpRightFromSquare, FaGithub, FaCodeBranch,
   FaChevronLeft, FaChevronRight,
 } from 'react-icons/fa6';
+import { apiUrl } from '../config';
 
 const SectionLabel = ({ children, num, count }) => (
   <div className="flex items-center gap-4 mb-12">
@@ -129,7 +130,6 @@ const Projects = () => {
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     axios
       .get(`${apiUrl}/api/projects`)
       .then((res) => setProjects(res.data))

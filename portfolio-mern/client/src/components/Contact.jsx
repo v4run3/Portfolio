@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { FaPaperPlane, FaCheck, FaTriangleExclamation } from 'react-icons/fa6';
+import { apiUrl } from '../config';
 
 const SectionLabel = ({ children, num }) => (
   <div className="flex items-center gap-4 mb-12">
@@ -33,7 +34,6 @@ const Contact = () => {
     e.preventDefault();
     setStatus({ kind: 'sending', text: 'POST /api/messages ...' });
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       await axios.post(`${apiUrl}/api/messages`, formData);
       setStatus({ kind: 'ok', text: '200 OK — message delivered' });
       setFormData({ name: '', email: '', message: '' });

@@ -6,6 +6,7 @@ import {
   FaEnvelope, FaLink, FaCheck, FaWandMagicSparkles, FaChevronLeft,
 } from 'react-icons/fa6';
 import AiChat from './AiChat';
+import { linkedInUrl } from '../config';
 
 const NAV_OFFSET = -72;
 
@@ -62,7 +63,7 @@ const CommandPalette = ({ open, onClose }) => {
         label: 'open linkedin',
         hint: 'linkedin.com',
         icon: FaLinkedin,
-        run: () => { window.open('#', '_blank', 'noopener'); close(); },
+        run: () => { window.open(linkedInUrl, '_blank', 'noopener'); close(); },
       },
       {
         group: 'links',

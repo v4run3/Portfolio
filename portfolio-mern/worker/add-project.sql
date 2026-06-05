@@ -3,10 +3,10 @@
 
 INSERT INTO projects (id, title, description, image, link, tags, created_at) VALUES (
   lower(hex(randomblob(16))),
-  'CI-CD Failure Predictor',
-  'CI-CD Failure Predictor is an AI-powered system that predicts failures in CI/CD pipelines.',
+  'qwen3.5-from-scratch',
+  'A project where I built a Qwen3.5-like LLM from scratch.',
   '',
-  'https://github.com/v4run3/ci-cd-failure-predictor',
-  '["Python","React","Docker","MLOps","DevOps","LLM","Kubernetes","Github Actions"]',
+  'https://github.com/v4run3/qwen35-from-scratch',
+  '["Python","Machine Learning","NLP","LLM","Pytorch","Deep Learning"]',
   strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 );

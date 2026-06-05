@@ -23,7 +23,13 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // framer-motion uses motion.div; react-icons use PascalCase destructuring
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]|^motion$',
+        argsIgnorePattern: '^_|[A-Z]',
+      }],
+      // palette resets state when opened — intentional sync with `open` prop
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
 ])

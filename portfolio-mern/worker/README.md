@@ -31,6 +31,10 @@ npm run db:seed      # inserts the two sample projects
 
 ## Deploy
 
+**Automatic:** merges to `main` deploy via GitHub Actions (see repo root `README.md`).
+
+**Manual:**
+
 ```bash
 npm run deploy
 ```

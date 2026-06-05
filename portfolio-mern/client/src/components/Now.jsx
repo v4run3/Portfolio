@@ -4,8 +4,9 @@ import {
   FaCodePullRequest, FaCodeFork, FaCircleDot,
 } from 'react-icons/fa6';
 
+import { apiUrl } from '../config';
+
 const GITHUB_USER = 'v4run3';
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const EVENT_META = {
   push: { Icon: FaCodeCommit, label: 'push' },
