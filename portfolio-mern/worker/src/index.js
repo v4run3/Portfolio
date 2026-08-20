@@ -6,7 +6,7 @@ const jsonHeaders = { 'Content-Type': 'application/json' };
 function corsHeaders(request, env) {
   const origin = request.headers.get('Origin') ?? '';
   const allowed = (env.ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
-  const allowOrigin = allowed.includes(origin) ? origin : allowed[0] ?? '*';
+  const allowOrigin = isAllowedOrigin(origin, allowed) ? origin : allowed[0] ?? '*';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -14,6 +14,19 @@ function corsHeaders(request, env) {
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
+}
+
+function isAllowedOrigin(origin, allowed) {
+  if (!origin) return false;
+
+  return allowed.some((candidate) => {
+    if (candidate === '*' || candidate === origin) return true;
+    if (candidate.startsWith('*.')) {
+      const suffix = candidate.slice(1);
+      return origin.endsWith(suffix);
+    }
+    return false;
+  });
 }
 
 function json(body, init = {}, request, env) {
@@ -249,7 +262,12 @@ async function chat(request, env) {
 
   let body;
   try {
-    body = await request.json();
+    const contentType = request.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      body = await request.json();
+    } else {
+      body = JSON.parse(await request.text());
+    }
   } catch {
     return json({ message: 'invalid JSON body' }, { status: 400 }, request, env);
   }
@@ -276,6 +294,7 @@ async function chat(request, env) {
     headers: {
       'content-type': 'text/event-stream',
       'cache-control': 'no-cache',
+      'x-content-type-options': 'nosniff',
       ...corsHeaders(request, env),
     },
   });

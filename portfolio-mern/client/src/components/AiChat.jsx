@@ -82,7 +82,7 @@ const AiChat = ({ variant = 'section', autoFocus = false }) => {
     try {
       const res = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify({ messages: history }),
       });
       if (!res.ok) {
