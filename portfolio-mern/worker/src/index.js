@@ -197,7 +197,7 @@ function formatGitHubContext({ recentRepos, allEvents }) {
   return lines.length ? lines.join('\n') : '(GitHub activity unavailable)';
 }
 
-const CHAT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+const CHAT_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
 
 async function buildSystemPrompt(env) {
   let projectContext = '(no projects listed)';
@@ -284,13 +284,17 @@ async function chat(request, env) {
 
   const system = await buildSystemPrompt(env);
 
-  const stream = await env.AI.run(CHAT_MODEL, {
+  const aiResponse = await env.AI.run(CHAT_MODEL, {
     messages: [{ role: 'system', content: system }, ...messages],
-    stream: true,
     max_tokens: 400,
   });
 
-  return new Response(stream, {
+  const text = typeof aiResponse?.response === 'string' ? aiResponse.response : '';
+  const payload =
+    `data: ${JSON.stringify({ response: text })}\n\n` +
+    'data: [DONE]\n\n';
+
+  return new Response(payload, {
     headers: {
       'content-type': 'text/event-stream',
       'cache-control': 'no-cache',
